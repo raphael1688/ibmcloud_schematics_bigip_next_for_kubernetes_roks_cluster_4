@@ -319,3 +319,39 @@ resource "ibm_tg_connection" "cluster_vpc_connection" {
   name         = var.cluster_vpc_name
   network_id   = local.cluster_vpc_crn
 }
+
+# ============================================================
+# Cluster Credentials
+# ============================================================
+
+data "ibm_container_cluster_config" "cluster_config" {
+  count           = var.create_cluster ? 1 : 0
+  cluster_name_id = ibm_container_vpc_cluster.openshift_cluster[0].id
+  region          = var.cluster_region
+
+  depends_on = [ibm_container_vpc_cluster.openshift_cluster]
+}
+
+# ============================================================
+# Delete Gateway API Admission Policy
+# ============================================================
+# Removes the OpenShift ingress operator's validating admission policy
+# binding that can block Gateway API CRD operations.
+# Uses curl against the Kubernetes API for Schematics compatibility
+# (kubectl is not available in Schematics runtime).
+
+resource "null_resource" "delete_gatewayapi_admission_policy" {
+  count = var.create_cluster ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      curl -sk \
+        -X DELETE \
+        -H "Authorization: Bearer ${data.ibm_container_cluster_config.cluster_config[0].token}" \
+        "${data.ibm_container_cluster_config.cluster_config[0].host}/apis/admissionregistration.k8s.io/v1/validatingadmissionpolicybindings/openshift-ingress-operator-gatewayapi-crd-admission" \
+        -o /dev/null -w "%%{http_code}" || true
+    EOT
+  }
+
+  depends_on = [data.ibm_container_cluster_config.cluster_config]
+}
