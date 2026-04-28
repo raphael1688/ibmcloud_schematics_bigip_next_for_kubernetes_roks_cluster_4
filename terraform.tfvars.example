@@ -1,0 +1,43 @@
+# ============================================================
+# IBM Cloud Credentials
+# ============================================================
+ibmcloud_api_key        = "your-ibm-cloud-api-key"
+ibmcloud_cluster_region = "ca-tor"
+ibmcloud_resource_group = "default"
+
+# ============================================================
+# Feature Flags
+# Set to true to create, false to skip
+# ============================================================
+
+# Create a new OpenShift ROKS cluster
+create_roks_cluster = true
+
+# Create a Transit Gateway and connect it to the cluster VPC
+create_roks_transit_gateway = true
+
+# Create a Cloud Object Storage instance for the OpenShift image registry
+create_roks_registry_cos_instance = true
+
+# ============================================================
+# Cluster Configuration
+# ============================================================
+openshift_cluster_name    = "tf-openshift-cluster"
+
+# OpenShift major.minor version (e.g. "4.18", "4.17").
+# The latest available patch release within that major.minor is selected
+# automatically. Leave empty ("") to use the latest available version overall.
+openshift_cluster_version = "4.18"
+
+roks_cluster_vpc_name  = "tf-cluster-vpc"
+roks_workers_per_zone  = 1
+roks_min_worker_vcpu_count = 16
+roks_min_worker_memory_gb  = 64
+
+# COS instance name (leave empty to use "<cluster_name>-cos")
+roks_cos_instance_name = ""
+
+# ============================================================
+# Transit Gateway Configuration
+# ============================================================
+roks_transit_gateway_name = "tf-tgw"
